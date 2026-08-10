@@ -44,6 +44,14 @@ jobs:
         run: |
           tools\premake\premake5.exe --file="tools/premake/premake5.lua" --dir="../myplugin-generated" --name="WaypointRoute" --gtasa vs2022
 
+      - name: DEBUG - Liet ke toan bo file da sinh ra
+        shell: pwsh
+        run: |
+          Write-Host "=== Cay thu muc trong workspace ==="
+          Get-ChildItem -Path "." -Recurse -Include "*.sln","*.vcxproj","*.cpp" -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -notmatch "plugin-sdk\\(shared|plugin_sa|plugin_iii|plugin_vc|plugin_iv|tools|examples)" } |
+            ForEach-Object { Write-Host $_.FullName }
+
       - name: Thay noi dung file .cpp mau bang code that cua ban
         shell: pwsh
         run: |
