@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 3.16)
 project(WaypointRoute LANGUAGES CXX)
 
 # ------------------------------------------------------------------
-# plugin-sdk (qua thư viện phụ thuộc safetyhook) cần chuẩn C++20 trở lên,
-# nếu không sẽ báo lỗi cú pháp kiểu "'auto' unexpected", "FnPtr undeclared".
+# safetyhook (thư viện phụ thuộc bên trong plugin-sdk) dùng std::expected,
+# tính năng CHỈ CÓ TỪ C++23 trở lên — đây là lỗi đã biết, nhiều người dùng
+# plugin-sdk khác cũng gặp (xem GitHub issue #201 của DK22Pac/plugin-sdk).
+# C++20 KHÔNG đủ, bắt buộc phải C++23.
 # ------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
-    add_compile_options(/std:c++20 /Zc:__cplusplus)
+    add_compile_options(/std:c++latest /Zc:__cplusplus)
 endif()
 
 # ------------------------------------------------------------------
@@ -57,6 +59,8 @@ endif()
 
 target_include_directories(WaypointRoute PRIVATE
     ${plugin_sdk_SOURCE_DIR}
-    ${plugin_sdk_SOURCE_DIR}/plugin_sa
     ${plugin_sdk_SOURCE_DIR}/shared
+    ${plugin_sdk_SOURCE_DIR}/shared/game
+    ${plugin_sdk_SOURCE_DIR}/plugin_sa
+    ${plugin_sdk_SOURCE_DIR}/plugin_sa/game_sa
 )
