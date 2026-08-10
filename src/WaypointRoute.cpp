@@ -1,22 +1,8 @@
-// ============================================================================
-// WaypointRoute.cpp
-// Bản build-được, mô phỏng lại logic "Drive/Walk to Waypoint" từ inacty.asi
-// (GTA San Andreas), dựa trên phân tích pseudocode IDA Pro (sub_1000D920,
-// sub_1000E390, sub_1000EB60, sub_1000E5E0).
-//
-// ĐIỀU KHIỂN (thay cho menu gốc — vì không xác định được framework menu gốc):
-//   F5 = Add Waypoint tại vị trí hiện tại của player
-//   F6 = Bật / Tắt Route (Start Route / Stop Route)
-//   F7 = Clear Waypoints (xoá hết + dừng route)
-//
-// LƯU Ý:
-//  - Đây là bản viết lại THEO HÀNH VI đã phân tích, không phải source gốc.
-//  - Phần AssignDriveTowardsTask dùng CTaskComplexControlCarMoveWithFollowRoute
-//    /AutoPilot đơn giản. Đây là điểm CẦN BẠN TỰ TEST TRONG GAME kỹ nhất,
-//    vì đây là chỗ suy luận nhiều nhất từ pseudoc (MEMORY[0x42F870] chưa
-//    verify được là hàm gốc nào). Nếu xe không lái đúng như mong đợi, đây
-//    là chỗ đầu tiên cần chỉnh.
-// ============================================================================
+// Include các header chuẩn C++ TRƯỚC plugin-sdk — bắt buộc, vì 1 số header
+// của plugin-sdk (nhắm tới compiler/DirectX SDK cũ) can thiệp vào cách khai
+// báo hàm toán học (sinf/sqrtf...), gây lỗi nếu <cmath> được nạp sau chúng.
+#include <cmath>
+#include <vector>
 
 #include <plugin.h>
 #include <CPed.h>
@@ -25,8 +11,6 @@
 #include <CWorld.h>
 #include <CTimer.h>
 #include <CPad.h>
-#include <cmath>
-#include <vector>
 
 using namespace plugin;
 
