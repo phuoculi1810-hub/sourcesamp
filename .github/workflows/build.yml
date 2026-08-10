@@ -34,9 +34,32 @@ jobs:
           Write-Host "PLUGIN_SDK_DIR = $sdkPath"
           echo "PLUGIN_SDK_DIR=$sdkPath" >> $env:GITHUB_ENV
 
-      # === FIX CHINH: action phai la "newplugin", khong phai "vs2022" ===
-      # "vs2022" chi la default action, khong kich hoat ham
-      # pluginSdkExampleProject() sinh ra .sln/.vcxproj thuc su.
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # === MOI: sinh va build Plugin.lib (thu vien tinh GTA-SA) TRUOC ===
+      - name: Sinh solution static-lib chinh cua plugin-sdk (Plugin.lib cho GTA-SA)
+        working-directory: plugin-sdk
+        shell: cmd
+        run: |
+          tools\premake\premake5.exe --file="tools/premake/premake5.lua" --gtasa vs2022
+
+      - name: Build Plugin.lib (Release, Win32)
+        shell: cmd
+        run: |
+          msbuild "plugin-sdk\plugin.sln" /p:Configuration=Release /p:Platform=Win32 /t:Plugin
+          if errorlevel 1 exit /b 1
+
+      - name: Kiem tra Plugin.lib da duoc build chua
+        shell: pwsh
+        run: |
+          $lib = Get-ChildItem -Path "plugin-sdk\output\lib" -Filter "Plugin.lib" -ErrorAction SilentlyContinue
+          if (-not $lib) {
+            Write-Error "KHONG tim thay Plugin.lib trong plugin-sdk\output\lib sau khi build."
+            exit 1
+          }
+          Write-Host "Tim thay: $($lib.FullName)"
+
       - name: Sinh project moi bang premake5 chinh thuc cua plugin-sdk
         working-directory: plugin-sdk
         shell: cmd
@@ -51,7 +74,6 @@ jobs:
             Where-Object { $_.FullName -notmatch "plugin-sdk\\(shared|plugin_sa|plugin_iii|plugin_vc|plugin_iv|tools|examples)" } |
             ForEach-Object { Write-Host $_.FullName }
 
-      # === FIX PHU: fail som neu premake khong sinh ra .sln ===
       - name: Kiem tra project da duoc sinh ra chua
         shell: pwsh
         run: |
@@ -73,10 +95,7 @@ jobs:
           Write-Host "Se ghi de vao file: $($target.FullName)"
           Copy-Item -Path "myplugin\src\WaypointRoute.cpp" -Destination $target.FullName -Force
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build bang MSBuild (Release, Win32)
+      - name: Build bang MSBuild (Release, GTA-SA)
         shell: cmd
         run: |
           setlocal enabledelayedexpansion
