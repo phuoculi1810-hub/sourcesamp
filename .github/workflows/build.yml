@@ -37,12 +37,25 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # === MOI: sinh va build Plugin.lib (thu vien tinh GTA-SA) TRUOC ===
+      # === Sinh solution static-lib chinh cua plugin-sdk (chua Plugin.lib cho GTA-SA) ===
       - name: Sinh solution static-lib chinh cua plugin-sdk (Plugin.lib cho GTA-SA)
         working-directory: plugin-sdk
         shell: cmd
         run: |
           tools\premake\premake5.exe --file="tools/premake/premake5.lua" --gtasa vs2022
+
+      # === DEBUG: xem chinh xac Configuration/Platform hop le trong plugin.sln ===
+      - name: DEBUG - In noi dung plugin.sln de xem config/platform hop le
+        shell: pwsh
+        run: |
+          Write-Host "=== Noi dung plugin-sdk\plugin.sln ==="
+          if (Test-Path "plugin-sdk\plugin.sln") {
+            Get-Content "plugin-sdk\plugin.sln"
+          } else {
+            Write-Host "KHONG TIM THAY plugin-sdk\plugin.sln !"
+            Write-Host "Liet ke moi file .sln trong plugin-sdk:"
+            Get-ChildItem -Path "plugin-sdk" -Recurse -Filter "*.sln" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          }
 
       - name: Build Plugin.lib (Release, Win32)
         shell: cmd
