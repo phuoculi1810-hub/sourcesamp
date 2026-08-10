@@ -7,14 +7,14 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure CMake (Win32)
-        run: cmake -B build -A Win32
+      - name: Configure CMake (Win32, VS2022 stable toolset)
+        run: cmake -B build -A Win32 -T v143
 
       - name: Build (Release)
         run: cmake --build build --config Release
