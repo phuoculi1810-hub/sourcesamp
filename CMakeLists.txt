@@ -10,7 +10,7 @@ project(WaypointRoute LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
-    add_compile_options(/std:c++latest /Zc:__cplusplus)
+    add_compile_options(/std:c++latest /Zc:__cplusplus /Zc:offsetof-)
 endif()
 
 # ------------------------------------------------------------------
