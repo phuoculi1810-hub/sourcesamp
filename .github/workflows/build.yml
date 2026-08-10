@@ -10,17 +10,53 @@ jobs:
     runs-on: windows-2022
 
     steps:
-      - name: Checkout code
+      - name: Checkout code cua ban (WaypointRoute.cpp)
         uses: actions/checkout@v4
+        with:
+          path: myplugin
 
-      - name: Configure CMake (Win32, VS2022 stable toolset)
-        run: cmake -B build -A Win32 -T v143
+      - name: Checkout plugin-sdk chinh thuc
+        uses: actions/checkout@v4
+        with:
+          repository: DK22Pac/plugin-sdk
+          path: plugin-sdk
 
-      - name: Build (Release)
-        run: cmake --build build --config Release
+      - name: Tai premake5.exe (ban Windows moi nhat)
+        shell: pwsh
+        run: |
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/premake/premake-core/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -match "windows" } | Select-Object -First 1
+          Write-Host "Tai ve: $($asset.name)"
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "premake.zip"
+          Expand-Archive -Path "premake.zip" -DestinationPath "premake-bin" -Force
+          Copy-Item -Path "premake-bin\premake5.exe" -Destination "plugin-sdk\tools\premake\premake5.exe" -Force
+
+      - name: Sinh project moi bang premake5 chinh thuc cua plugin-sdk
+        working-directory: plugin-sdk
+        shell: cmd
+        run: |
+          tools\premake\premake5.exe --dir="../myplugin-generated" --name="WaypointRoute" --gtasa vs2022
+
+      - name: Thay noi dung file .cpp mau bang code that cua ban
+        shell: pwsh
+        run: |
+          $target = Get-ChildItem -Path "myplugin-generated" -Recurse -Filter "*.cpp" | Select-Object -First 1
+          Write-Host "Se ghi de vao file: $($target.FullName)"
+          Copy-Item -Path "myplugin\src\WaypointRoute.cpp" -Destination $target.FullName -Force
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build bang MSBuild (Release, Win32)
+        shell: cmd
+        run: |
+          for /r "myplugin-generated" %%f in (*.sln) do (
+            echo Building %%f
+            msbuild "%%f" /p:Configuration=Release /p:Platform=Win32
+          )
 
       - name: Upload file .asi
         uses: actions/upload-artifact@v4
         with:
           name: WaypointRoute-asi
-          path: build/Release/WaypointRoute.asi
+          path: myplugin-generated/**/*.asi
