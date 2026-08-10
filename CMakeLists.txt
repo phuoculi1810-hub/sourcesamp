@@ -2,6 +2,16 @@ cmake_minimum_required(VERSION 3.16)
 project(WaypointRoute LANGUAGES CXX)
 
 # ------------------------------------------------------------------
+# plugin-sdk (qua thư viện phụ thuộc safetyhook) cần chuẩn C++20 trở lên,
+# nếu không sẽ báo lỗi cú pháp kiểu "'auto' unexpected", "FnPtr undeclared".
+# ------------------------------------------------------------------
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(MSVC)
+    add_compile_options(/std:c++20 /Zc:__cplusplus)
+endif()
+
+# ------------------------------------------------------------------
 # Bắt buộc build 32-bit (Win32) vì GTA San Andreas là game 32-bit.
 # ------------------------------------------------------------------
 if(NOT CMAKE_GENERATOR_PLATFORM STREQUAL "Win32" AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "Win32")
