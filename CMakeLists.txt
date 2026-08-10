@@ -47,20 +47,23 @@ set_target_properties(WaypointRoute PROPERTIES
 target_compile_definitions(WaypointRoute PRIVATE GTASA)
 
 # ------------------------------------------------------------------
-# Liên kết với thư viện game_sa của plugin-sdk (chứa CPed, CVehicle,...)
-# Tên target có thể khác nhau tuỳ version plugin-sdk; nếu CMake báo lỗi
-# "target không tồn tại" ở dòng dưới, xem log lỗi để biết tên đúng.
+# plugin-sdk có rất nhiều header nằm rải rác nhiều thư mục con lồng nhau,
+# và các header include lẫn nhau bằng đường dẫn tương đối ngắn (ví dụ
+# #include "eWeaponType.h") mà không phải lúc nào cũng ở cùng thư mục.
+# Thay vì liệt kê thủ công từng thư mục (dễ thiếu, gây lỗi liên tiếp),
+# ta QUÉT TỰ ĐỘNG mọi thư mục con có chứa file .h/.hpp và thêm hết vào
+# include path — đảm bảo mọi include tương đối đều tìm được.
 # ------------------------------------------------------------------
-if(TARGET game_sa)
-    target_link_libraries(WaypointRoute PRIVATE game_sa)
-elseif(TARGET plugin_sa)
-    target_link_libraries(WaypointRoute PRIVATE plugin_sa)
-endif()
-
-target_include_directories(WaypointRoute PRIVATE
-    ${plugin_sdk_SOURCE_DIR}
-    ${plugin_sdk_SOURCE_DIR}/shared
-    ${plugin_sdk_SOURCE_DIR}/shared/game
-    ${plugin_sdk_SOURCE_DIR}/plugin_sa
-    ${plugin_sdk_SOURCE_DIR}/plugin_sa/game_sa
+file(GLOB_RECURSE ALL_SDK_HEADERS
+    "${plugin_sdk_SOURCE_DIR}/*.h"
+    "${plugin_sdk_SOURCE_DIR}/*.hpp"
 )
+
+set(SDK_INCLUDE_DIRS "")
+foreach(HEADER_FILE ${ALL_SDK_HEADERS})
+    get_filename_component(HEADER_DIR ${HEADER_FILE} DIRECTORY)
+    list(APPEND SDK_INCLUDE_DIRS ${HEADER_DIR})
+endforeach()
+list(REMOVE_DUPLICATES SDK_INCLUDE_DIRS)
+
+target_include_directories(WaypointRoute PRIVATE ${SDK_INCLUDE_DIRS})
