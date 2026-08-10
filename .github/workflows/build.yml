@@ -35,7 +35,7 @@ jobs:
         working-directory: plugin-sdk
         shell: cmd
         run: |
-          tools\premake\premake5.exe --dir="../myplugin-generated" --name="WaypointRoute" --gtasa vs2022
+          tools\premake\premake5.exe --file="tools/premake/premake5.lua" --dir="../myplugin-generated" --name="WaypointRoute" --gtasa vs2022
 
       - name: Thay noi dung file .cpp mau bang code that cua ban
         shell: pwsh
