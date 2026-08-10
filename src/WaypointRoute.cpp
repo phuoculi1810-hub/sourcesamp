@@ -51,6 +51,14 @@ static void PlayWaypointReachedSound()
 // Gán lệnh lái xe tới toạ độ đích — dùng AutoPilot đơn giản (ổn định, không
 // cần biết đúng offset gốc 0x42F870). Cách này KHÁC bản gốc nhưng đạt cùng
 // mục đích: xe tự lái hướng về waypoint.
+//
+// LƯU Ý: field đúng trong plugin-sdk là "m_autoPilot" (viết thường, có tiền
+// tố m_), không phải "AutoPilot". Xem CVehicle.h trong plugin-sdk:
+//   class CVehicle : public CPhysical {
+//       ...
+//       CAutoPilot m_autoPilot;
+//       ...
+//   };
 // ----------------------------------------------------------------------------
 static void AssignDriveTowardsTask(CVehicle* vehicle, float destX, float destY, float destZ)
 {
@@ -58,11 +66,9 @@ static void AssignDriveTowardsTask(CVehicle* vehicle, float destX, float destY, 
         return;
 
     // Auto-pilot đơn giản: đặt điểm đến và tốc độ hành trình.
-    // (Tên field có thể khác tuỳ version plugin-sdk — nếu compile lỗi ở đây,
-    //  mở CAutomobile.h / CVehicle.h trong plugin-sdk để đối chiếu tên đúng.)
-    vehicle->AutoPilot.m_nCarMission        = MISSION_CRUISE;
-    vehicle->AutoPilot.m_nCruiseSpeed       = static_cast<uint8_t>(CRUISE_SPEED);
-    vehicle->AutoPilot.m_vecDestinationCoors = CVector(destX, destY, destZ);
+    vehicle->m_autoPilot.m_nCarMission        = MISSION_CRUISE;
+    vehicle->m_autoPilot.m_nCruiseSpeed       = static_cast<uint8_t>(CRUISE_SPEED);
+    vehicle->m_autoPilot.m_vecDestinationCoors = CVector(destX, destY, destZ);
 }
 
 // Dừng lệnh lái tự động khi Stop Route / Clear Waypoints
@@ -71,7 +77,7 @@ static void StopDriveTask()
     CPed* player = FindPlayerPed();
     if (player && player->m_pVehicle)
     {
-        player->m_pVehicle->AutoPilot.m_nCarMission = MISSION_NONE;
+        player->m_pVehicle->m_autoPilot.m_nCarMission = MISSION_NONE;
     }
 }
 
