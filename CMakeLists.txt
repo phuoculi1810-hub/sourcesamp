@@ -59,10 +59,37 @@ file(GLOB_RECURSE ALL_SDK_HEADERS
     "${plugin_sdk_SOURCE_DIR}/*.hpp"
 )
 
+# Danh sách tên file TRÙNG với header chuẩn C/C++ — nếu plugin-sdk có file
+# cùng tên (ví dụ tự định nghĩa "math.h" riêng), việc đưa thư mục đó vào
+# include path sẽ "che" mất header chuẩn thật của Visual Studio, gây lỗi
+# hàng loạt hàm toán học/chuỗi biến mất (đúng loại lỗi ta vừa gặp).
+set(RESERVED_STD_HEADER_NAMES
+    math.h cmath string.h cstring memory vector algorithm functional
+    string cstdlib stdlib.h cstdio stdio.h cassert assert.h ctime time.h
+    type_traits utility limits climits cfloat float.h stdint.h cstdint
+)
+
+# Bước 1: quét trước để tìm TOÀN BỘ thư mục "nguy hiểm" (chứa file trùng tên)
+set(BAD_DIRS "")
+foreach(HEADER_FILE ${ALL_SDK_HEADERS})
+    get_filename_component(HEADER_NAME ${HEADER_FILE} NAME)
+    list(FIND RESERVED_STD_HEADER_NAMES ${HEADER_NAME} FOUND_INDEX)
+    if(NOT FOUND_INDEX EQUAL -1)
+        get_filename_component(HEADER_DIR ${HEADER_FILE} DIRECTORY)
+        list(APPEND BAD_DIRS ${HEADER_DIR})
+        message(STATUS "Phat hien thu muc nguy hiem (co file trung ten header chuan): ${HEADER_DIR} (${HEADER_NAME})")
+    endif()
+endforeach()
+list(REMOVE_DUPLICATES BAD_DIRS)
+
+# Bước 2: thêm mọi thư mục KHÔNG nằm trong danh sách nguy hiểm
 set(SDK_INCLUDE_DIRS "")
 foreach(HEADER_FILE ${ALL_SDK_HEADERS})
     get_filename_component(HEADER_DIR ${HEADER_FILE} DIRECTORY)
-    list(APPEND SDK_INCLUDE_DIRS ${HEADER_DIR})
+    list(FIND BAD_DIRS ${HEADER_DIR} IS_BAD)
+    if(IS_BAD EQUAL -1)
+        list(APPEND SDK_INCLUDE_DIRS ${HEADER_DIR})
+    endif()
 endforeach()
 list(REMOVE_DUPLICATES SDK_INCLUDE_DIRS)
 
