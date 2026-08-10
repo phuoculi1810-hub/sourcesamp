@@ -41,7 +41,7 @@ jobs:
         working-directory: plugin-sdk
         shell: cmd
         run: |
-          tools\premake\premake5.exe --file="tools/premake/premake5.lua" --dir="../myplugin-generated" --name="WaypointRoute" --gtasa newplugin
+          tools\premake\premake5.exe --file="tools/premake/premake5.lua" --dir="../../../myplugin-generated" --name="WaypointRoute" --gtasa newplugin
 
       - name: DEBUG - Liet ke toan bo file da sinh ra
         shell: pwsh
