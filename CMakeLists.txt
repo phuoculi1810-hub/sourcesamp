@@ -55,9 +55,19 @@ target_compile_definitions(WaypointRoute PRIVATE GTASA)
 # include path — đảm bảo mọi include tương đối đều tìm được.
 # ------------------------------------------------------------------
 file(GLOB_RECURSE ALL_SDK_HEADERS
-    "${plugin_sdk_SOURCE_DIR}/*.h"
-    "${plugin_sdk_SOURCE_DIR}/*.hpp"
+    "${plugin_sdk_SOURCE_DIR}/plugin_sa/*.h"
+    "${plugin_sdk_SOURCE_DIR}/plugin_sa/*.hpp"
+    "${plugin_sdk_SOURCE_DIR}/shared/*.h"
+    "${plugin_sdk_SOURCE_DIR}/shared/*.hpp"
 )
+# LƯU Ý: cố tình KHÔNG quét toàn bộ plugin_sdk_SOURCE_DIR như trước, vì nó
+# còn chứa các thư viện phụ được tải kèm (như safetyhook, và thư viện
+# disassembler Zydis mà safetyhook dùng). Các thư viện dạng "hook code máy"
+# này thường tự mang theo bản header C RÚT GỌN cho môi trường đặc biệt
+# (kernel/embedded), có tên trùng hệt header chuẩn (string.h, stdint.h...)
+# — nếu lọt vào include path sẽ "đè" mất header chuẩn thật của Visual
+# Studio, gây lỗi hàng loạt hàm CRT "không tồn tại" y hệt ta vừa gặp.
+# Ta chỉ cần code trong plugin_sa/ và shared/ (chứa CPed, CVehicle...).
 
 # Danh sách tên file TRÙNG với header chuẩn C/C++ — nếu plugin-sdk có file
 # cùng tên (ví dụ tự định nghĩa "math.h" riêng), việc đưa thư mục đó vào
