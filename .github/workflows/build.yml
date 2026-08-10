@@ -57,10 +57,10 @@ jobs:
             Get-ChildItem -Path "plugin-sdk" -Recurse -Filter "*.sln" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
           }
 
-      - name: Build Plugin.lib (Release, Win32)
+      - name: Build Plugin.lib (Release, Mixed Platforms)
         shell: cmd
         run: |
-          msbuild "plugin-sdk\plugin.sln" /p:Configuration=Release /p:Platform=Win32 /t:Plugin
+          msbuild "plugin-sdk\plugin.sln" /p:Configuration=Release /p:Platform="Mixed Platforms" /t:Plugin_SA
           if errorlevel 1 exit /b 1
 
       - name: Kiem tra Plugin.lib da duoc build chua
